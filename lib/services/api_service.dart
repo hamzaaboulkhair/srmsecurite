@@ -310,6 +310,96 @@ class ApiService {
     }
   }
 
+
+
+// ... other imports and class definition
+
+  static Future<List<Map<String, dynamic>>> fetchNotificationsByUserId(int userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Utilisateur non authentifié");
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/notifications/utilisateur/$userId'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // **CRUCIAL FIX FOR ACCENTS:** Decode the response body bytes as UTF-8
+        final String responseBodyUtf8 = utf8.decode(response.bodyBytes);
+        return List<Map<String, dynamic>>.from(jsonDecode(responseBodyUtf8));
+      } else {
+        // You might want to decode the error body too for better debugging
+        final String errorBody = utf8.decode(response.bodyBytes);
+        throw Exception("Échec de la récupération des notifications pour l'utilisateur $userId. Statut: ${response.statusCode}, Erreur: $errorBody");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion : $e");
+    }
+  }
+
+  static Future<int> fetchUnreadNotificationsCount(int userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Utilisateur non authentifié");
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/notifications/non-lues/$userId'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return int.parse(response.body);
+      } else {
+        throw Exception("Erreur lors de la récupération du nombre de notifications");
+      }
+    } catch (e) {
+      print("Erreur API fetchUnreadNotificationsCount : $e");
+      return 0;
+    }
+  }
+
+
+  static Future<void> markAllNotificationsAsRead(int userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Utilisateur non authentifié");
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/notifications/marquer-lues/$userId'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Erreur lors de la mise à jour des notifications");
+      }
+    } catch (e) {
+      print("Erreur API markAllNotificationsAsRead : $e");
+    }
+  }
+
+
   static Future<List<Map<String, dynamic>>> fetchComptesRendusByPlanActionId(int planActionId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -336,6 +426,9 @@ class ApiService {
       throw Exception("Erreur de connexion : $e");
     }
   }
+
+
+
 
 
 
@@ -448,6 +541,37 @@ class ApiService {
       return {};
     }
   }
+
+  static Future<void> sendTokenToBackend(String fcmToken) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('id');
+
+      if (token == null || userId == null) {
+        throw Exception("Utilisateur non authentifié.");
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/utilisateurs/$userId/fcm-token'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(fcmToken),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Token FCM envoyé avec succès.');
+      } else {
+        print('❌ Erreur lors de l\'envoi du token FCM : ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Exception lors de l\'envoi du token FCM : $e');
+    }
+  }
+
+
 
 
   static Future<List<String>> _encodeFilesAsBase64(List<File> files) async {

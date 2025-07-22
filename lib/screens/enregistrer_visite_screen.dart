@@ -343,30 +343,35 @@ class _EnregistrerVisiteScreenState extends State<EnregistrerVisiteScreen> {
   Widget _buildButtons() {
     return Row(
       children: [
-        ElevatedButton(
-          onPressed: _submitVisite,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue.shade700,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _submitVisite,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            child: const Text("Enregistrer"),
           ),
-          child: const Text("Enregistrer la Visite"),
         ),
         const SizedBox(width: 15),
-        OutlinedButton(
-          onPressed: () => Navigator.pop(context),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.blue.shade700,
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            side: BorderSide(color: Colors.blue.shade700, width: 1.5),
-            textStyle: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.blue.shade700,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              side: BorderSide(color: Colors.blue.shade700, width: 1.5),
+              textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            child: const Text("Annuler"),
           ),
-          child: const Text("Annuler"),
         ),
       ],
     );
   }
+
 }

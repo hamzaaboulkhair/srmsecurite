@@ -119,7 +119,7 @@ class DetailsObjetVisiteScreen extends StatelessWidget {
       children: [
         SizedBox(
           width: 90,
-          child: Text('$label :', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 15)),
+          child: Text('$label ', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 15)),
         ),
         Expanded(
           child: Text(value, style: GoogleFonts.montserrat(fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2),

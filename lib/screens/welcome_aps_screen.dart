@@ -1,15 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:visite_securite/screens/NotificationsScreen.dart';
 import 'package:visite_securite/screens/mes_visites_screen.dart';
 import 'package:visite_securite/screens/home_screen.dart';
+import '../services/api_service.dart';
 import 'objet_visite_screen.dart';
-import 'visites_aps_screen.dart'; // Importez le nouvel écran
+import 'visites_aps_screen.dart';
 
-class WelcomeApsScreen extends StatelessWidget {
+class WelcomeApsScreen extends StatefulWidget {
   final int userId;
 
   const WelcomeApsScreen({super.key, required this.userId});
+
+  @override
+  State<WelcomeApsScreen> createState() => _WelcomeApsScreenState();
+}
+
+class _WelcomeApsScreenState extends State<WelcomeApsScreen> {
+  int unreadCount = 0;
+
+  Future<void> _loadUnreadNotifications() async {
+    final count = await ApiService.fetchUnreadNotificationsCount(widget.userId);
+    print("🔴 Notifications non lues : $count (pour userId=${widget.userId})");
+    setState(() {
+      unreadCount = count;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadNotifications();
+
+    // 🔔 Écoute des notifications FCM pendant que l'app est ouverte
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        final title = message.notification!.title ?? "Notification";
+        final body = message.notification!.body ?? "";
+
+        print("📥 Notification reçue (foreground) : $title - $body");
+
+        // Affichage dans l'app
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("$title\n$body")),
+        );
+        _loadUnreadNotifications();
+      }
+    });
+
+    // 🔁 Notification cliquée quand app en arrière-plan
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      final title = message.notification?.title;
+      print("📦 Notification ouverte : $title");
+      // TODO : rediriger vers une page spécifique si nécessaire
+    });
+
+    });
+
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,50 +135,55 @@ class WelcomeApsScreen extends StatelessWidget {
           // Menu Items Section
           Expanded(
             child: Container(
-              color: Colors.grey.shade50, // Very light grey background
+              color: Colors.grey.shade50,
               padding: const EdgeInsets.all(25),
               child: Column(
                 children: [
                   _buildMenuItem(
                     context,
                     "Planifier une visite",
-                    FontAwesomeIcons.calendarPlus, // Changed icon
+                    FontAwesomeIcons.calendarPlus,
                         () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) =>  ObjetVisiteScreen()),
+                      MaterialPageRoute(builder: (_) => ObjetVisiteScreen()),
                     ),
                   ),
                   const SizedBox(height: 20),
                   _buildMenuItem(
                     context,
                     "Mes visites",
-                    FontAwesomeIcons.listAlt, // Changed icon
+                    FontAwesomeIcons.listAlt,
                         () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) =>  MesVisitesScreen()),
+                      MaterialPageRoute(builder: (_) => MesVisitesScreen()),
                     ),
                   ),
                   const SizedBox(height: 20),
                   _buildMenuItem(
                     context,
-                    "Suivi des actions", // Updated title to be more specific for APS
-                    FontAwesomeIcons.tasks, // Changed icon to represent tasks/actions
+                    "Suivi des actions",
+                    FontAwesomeIcons.tasks,
                         () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => VisitesApsScreen(apsId: userId)),
+                      MaterialPageRoute(builder: (_) => VisitesApsScreen(apsId: widget.userId)),
                     ),
                   ),
                   const SizedBox(height: 20),
                   _buildMenuItem(
                     context,
-                    "Documentation Utile", // Updated title
-                    FontAwesomeIcons.bookOpen, // Changed icon
-                        () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Page Documentation à venir")),
+                    "Notifications",
+                    FontAwesomeIcons.bell,
+                        () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => NotificationsScreen(userId: widget.userId)),
                       );
+                      _loadUnreadNotifications(); // 👈 recharge après retour
                     },
+                    showBadge: unreadCount > 0,
+                    badgeCount: unreadCount,
                   ),
+
                 ],
               ),
             ),
@@ -139,12 +197,14 @@ class WelcomeApsScreen extends StatelessWidget {
       BuildContext context,
       String title,
       IconData icon,
-      VoidCallback onTap,
-      ) {
+      VoidCallback onTap, {
+        bool showBadge = false,
+        int badgeCount = 0,
+      }) {
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(16),
-      elevation: 3, // Added subtle elevation
+      elevation: 3,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -156,17 +216,48 @@ class WelcomeApsScreen extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: FaIcon(
-                  icon,
-                  color: Colors.blue.shade800,
-                  size: 26,
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: FaIcon(
+                      icon,
+                      color: Colors.blue.shade800,
+                      size: 26,
+                    ),
+                  ),
+                  if (showBadge && badgeCount > 0)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$badgeCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 18),
               Expanded(
@@ -190,4 +281,5 @@ class WelcomeApsScreen extends StatelessWidget {
       ),
     );
   }
+
 }

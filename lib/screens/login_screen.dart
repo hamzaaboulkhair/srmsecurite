@@ -5,7 +5,9 @@ import 'package:visite_securite/screens/welcome_aps_screen.dart';
 import 'package:visite_securite/screens/welcome_responsable_screen.dart';
 import 'package:visite_securite/screens/welcome_visitor_screen.dart';
 import 'package:visite_securite/services/auth_service.dart';
-import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
+import 'package:visite_securite/services/api_service.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // 🆕 Ajout FCM
 import 'PasswordRecoveryScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,6 +21,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService authService = AuthService();
   bool _obscurePassword = true;
 
+  Future<void> _initFCMToken() async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      NotificationSettings settings = await messaging.requestPermission();
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        String? token = await messaging.getToken();
+        print("✅ Token FCM : $token");
+
+        if (token != null) {
+          await ApiService.sendTokenToBackend(token);
+        } else {
+          print("⚠️ Impossible d'obtenir le token FCM");
+        }
+      } else {
+        print("🔒 Permission de notification refusée");
+      }
+    } catch (e) {
+      print("❌ Erreur lors de la récupération du token FCM : $e");
+    }
+  }
+
   void _login() async {
     String email = emailController.text;
     String password = passwordController.text;
@@ -26,11 +50,15 @@ class _LoginScreenState extends State<LoginScreen> {
     String? role = await authService.login(email, password);
 
     if (role != null) {
-      Widget nextScreen;
       final prefs = await SharedPreferences.getInstance();
       final int? id = prefs.getInt('id');
+
+      // ✅ Envoie du token FCM après authentification
+      await _initFCMToken();
+
+      Widget nextScreen;
       if (role == "VISITEUR") {
-        nextScreen = WelcomeVisitorScreen();
+        nextScreen = WelcomeVisitorScreen(userId: id!,);
       } else if (role == "APS") {
         nextScreen = WelcomeApsScreen(userId: id!);
       } else if (role == "RESPONSABLE") {

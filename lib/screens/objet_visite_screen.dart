@@ -116,6 +116,7 @@ class _ObjetVisiteScreenState extends State<ObjetVisiteScreen> with SingleTicker
       ),
       body: TabBarView(
         controller: _tabController,
+        physics: NeverScrollableScrollPhysics(),
         children: [
           _buildMapView(),
           _buildListView(),

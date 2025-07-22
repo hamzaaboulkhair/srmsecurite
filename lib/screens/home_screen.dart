@@ -36,32 +36,38 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Elevated and slightly larger image with rounded corners
-                Container(
-                  margin: EdgeInsets.only(bottom: 40, top: 20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.shade100.withOpacity(0.5),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      "assets/images/srm_background.jpg",
-                      height: 300,
-                      width: MediaQuery.of(context).size.width * 0.85, // Responsive width
-                      fit: BoxFit.cover,
+            child: Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Elevated and slightly larger image with rounded corners
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 40, top: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.shade100.withOpacity(0.5),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                  ),
-                ).animate().slideY(duration: const Duration(milliseconds: 500), begin: -0.1, end: 0), // Subtle slide-in animation
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        "assets/images/srm_background.jpg",
+                        height: 300,
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ).animate().slideY(duration: const Duration(milliseconds: 500), begin: -0.1, end: 0),
+
 
                 // Logo with a refined shadow
                 Container(
@@ -146,7 +152,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-        ],
+          ),],
       ),
     );
   }

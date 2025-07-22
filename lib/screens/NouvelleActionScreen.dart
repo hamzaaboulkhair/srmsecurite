@@ -80,7 +80,6 @@ class _NouvelleActionScreenState extends State<NouvelleActionScreen> {
 
   Widget _buildBottomButtons() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -90,7 +89,7 @@ class _NouvelleActionScreenState extends State<NouvelleActionScreen> {
           ),
           child: const Text("Annuler"),
         ),
-        const SizedBox(width: 120),
+        const Spacer(),
         ElevatedButton(
           onPressed: _submitPlanAction,
           style: ElevatedButton.styleFrom(
@@ -98,13 +97,15 @@ class _NouvelleActionScreenState extends State<NouvelleActionScreen> {
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10),),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           child: const Text("Enregistrer"),
         ),
       ],
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {

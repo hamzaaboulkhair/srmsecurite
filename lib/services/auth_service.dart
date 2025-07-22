@@ -6,7 +6,35 @@ class AuthService {
   final String baseUrl = "http://10.0.2.2:8080/api/auth"; // 🔹 Adresse du backend
 
   // 🔹 Connexion
+  static const bool isMockMode = false;
+
   Future<String?> login(String email, String password) async {
+    if (isMockMode) {
+      await Future.delayed(Duration(seconds: 1)); // Simule une latence
+
+      // Simule un utilisateur VISITEUR
+      if (email == 'visiteur@example.com' && password == '1234') {
+        await _saveTokenAndRole('mock_token_visiteur', 'VISITEUR', 1);
+        return 'VISITEUR';
+      }
+
+      // Simule un utilisateur APS
+      if (email == 'aps@example.com' && password == '1234') {
+        await _saveTokenAndRole('mock_token_aps', 'APS', 2);
+        return 'APS';
+      }
+
+      // Simule un utilisateur RESPONSABLE
+      if (email == 'responsable@example.com' && password == '1234') {
+        await _saveTokenAndRole('mock_token_responsable', 'RESPONSABLE', 3);
+        return 'RESPONSABLE';
+      }
+
+      print("Login mock échoué : identifiants invalides");
+      return null;
+    }
+
+    // 🔁 Mode réel
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/login"),
@@ -21,18 +49,18 @@ class AuthService {
         final data = jsonDecode(response.body);
         String token = data["token"];
         String role = data["role"];
-        int utilisateurId = data["id"]; //Récupère l'ID de l'utilisateur depuis l'API
+        int utilisateurId = data["id"];
 
         await _saveTokenAndRole(token, role, utilisateurId);
-        final prefs = await SharedPreferences.getInstance();
-        print("ID utilisateur stocké après login: ${prefs.getInt('id')}");
         return role;
       }
     } catch (e) {
       print("Login failed: $e");
     }
+
     return null;
   }
+
 
 
   // 🔹 Inscription

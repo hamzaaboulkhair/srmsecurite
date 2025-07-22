@@ -51,7 +51,7 @@ class _ResponsableActionDetailScreenState extends State<ResponsableActionDetailS
     super.dispose();
   }
 
-  Future<void> _fetchComptesRendus() async {
+    Future<void> _fetchComptesRendus() async {
     try {
       final result = await ApiService.fetchComptesRendusByPlanActionId(widget.actionId);
       setState(() {
@@ -280,7 +280,7 @@ class _ResponsableActionDetailScreenState extends State<ResponsableActionDetailS
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Modifier l\'action', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 20)),
+        title: Text('Réaliser l\'action', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 20)),
         backgroundColor: Colors.blue.shade800,
         iconTheme: const IconThemeData(color: Colors.white),
       ),

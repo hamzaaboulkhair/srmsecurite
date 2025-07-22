@@ -67,7 +67,9 @@ class _MesVisitesScreenState extends State<MesVisitesScreen> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur lors de la suppression.")),
+        const SnackBar(content: Text("Impossible de supprimer la visite car elle a déjà été envoyée."),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
